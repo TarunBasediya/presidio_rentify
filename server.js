@@ -16,13 +16,13 @@ const app = express();
 const mongoUrl = process.env.MONGO_URL;
 
 const corsOrigin ={
-    origin:'https://glowing-kitten-b5c84f.netlify.app', 
+    origin:'https://presidio-rentify-z0pe.onrender.com', 
     credentials:true,            
     optionSuccessStatus:200
 }
 app.use(cors(corsOrigin));
 // Connect to MongoDB
-mongoose.connect(process.env.MONGO_URL, {
+mongoose.connect(mongoUrl, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 });
