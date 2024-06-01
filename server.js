@@ -16,7 +16,7 @@ const app = express();
 const mongoUrl = process.env.MONGO_URL;
 
 const corsOrigin ={
-    origin:'https://6659d5dc37abf63c4cca1e5c--glowing-kitten-b5c84f.netlify.app', 
+    origin:'https://glowing-kitten-b5c84f.netlify.app/', 
     credentials:true,            
     optionSuccessStatus:200
 }
