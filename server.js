@@ -11,7 +11,7 @@ import fs from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
+console.log(__dirname);
 dotenv.config();
 
 const app = express();
@@ -169,8 +169,8 @@ app.get('*', (req, res) => {
 const PORT = process.env.PORT || 3000;
 
 const httpsOptions = {
-    key: fs.readFileSync(path.join(__dirname, 'presidio-backend/server.key')),
-    cert: fs.readFileSync(path.join(__dirname, 'presidio-backend/server.cert'))
+    key: fs.readFileSync(path.join(__dirname, 'server.key')),
+    cert: fs.readFileSync(path.join(__dirname, 'server.cert'))
 };
 
 https.createServer(httpsOptions, app).listen(PORT, () => {
