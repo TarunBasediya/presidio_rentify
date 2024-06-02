@@ -16,6 +16,11 @@ dotenv.config();
 const app = express();
 const mongoUrl = process.env.MONGO_URL;
 
+
+app.use(express.static(path.join(__dirname, "presidio/build")))
+app.use("*", (req, res)=>res.sendFile(path.join(__dirname, "presidio/build/index.html")))
+
+
 // Allowed origins
 const allowedOrigins = [
     'https://665be7171ce667f0412f8a92--glowing-kitten-b5c84f.netlify.app',
@@ -168,13 +173,16 @@ app.get('/properties', auth, async (req, res) => {
 });
 
 // Middleware to serve static files (like your React app's build folder)
-app.use(express.static(path.join(__dirname, 'C:\\Users\\USER\\Documents\\Presidio_challenge\\presidio\\build')));
+const staticPath = path.join(__dirname, '..', 'presidio', 'build');
+console.log(`Serving static files from: ${staticPath}`);
+app.use(express.static(staticPath));
 
 // Catch-all route to serve the index.html file
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'C:\\Users\\USER\\Documents\\Presidio_challenge\\presidio\\build', 'index.html'));
+    const indexPath = path.join(__dirname, '..', 'presidio', 'build', 'index.html');
+    console.log(`Serving index.html from: ${indexPath}`);
+    res.sendFile(indexPath);
 });
-
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
