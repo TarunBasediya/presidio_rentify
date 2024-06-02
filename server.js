@@ -15,20 +15,26 @@ dotenv.config();
 const app = express();
 const mongoUrl = process.env.MONGO_URL;
 
-const corsOrigin ={
-    origin:'https://665be7171ce667f0412f8a92--glowing-kitten-b5c84f.netlify.app/', 
-    credentials:true,            
-    optionSuccessStatus:200
-}
-app.use(cors(corsOrigin));
+// CORS configuration
+const corsOptions = {
+    origin: 'https://665be7171ce667f0412f8a92--glowing-kitten-b5c84f.netlify.app', // Corrected origin URL without trailing slash
+    credentials: true,
+    optionsSuccessStatus: 200
+};
+
+// Apply CORS middleware
+app.use(cors(corsOptions));
+
+// Handle preflight requests
+app.options('*', cors(corsOptions));
+
 // Connect to MongoDB
 mongoose.connect(mongoUrl, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 });
 
-// Middleware
-// app.use(cors(options));
+// Middleware to parse JSON requests
 app.use(express.json());
 
 // User Schema
@@ -74,7 +80,7 @@ app.post('/register', async (req, res) => {
     }
     res.on('finish', () => {
         console.log('Response Headers:', res.getHeaders());
-      });
+    });
 });
 
 // Login Route
