@@ -15,9 +15,23 @@ dotenv.config();
 const app = express();
 const mongoUrl = process.env.MONGO_URL;
 
+// Allowed origins
+const allowedOrigins = [
+    'https://665be7171ce667f0412f8a92--glowing-kitten-b5c84f.netlify.app',
+    'https://glowing-kitten-b5c84f.netlify.app'
+];
+
 // CORS configuration
 const corsOptions = {
-    origin: 'https://665be7171ce667f0412f8a92--glowing-kitten-b5c84f.netlify.app', // Corrected origin URL without trailing slash
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) === -1) {
+            const msg = 'The CORS policy for this site does not allow access from the specified origin.';
+            return callback(new Error(msg), false);
+        }
+        return callback(null, true);
+    },
     credentials: true,
     optionsSuccessStatus: 200
 };
