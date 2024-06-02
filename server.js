@@ -4,14 +4,13 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import path from 'path';
+import path from 'path'; 
 import { fileURLToPath } from 'url';
-import https from 'https';
 import fs from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-console.log(__dirname);
+
 dotenv.config();
 
 const app = express();
@@ -26,6 +25,7 @@ const allowedOrigins = [
 // CORS configuration
 const corsOptions = {
     origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
         if (allowedOrigins.indexOf(origin) === -1) {
             const msg = 'The CORS policy for this site does not allow access from the specified origin.';
@@ -47,6 +47,9 @@ app.options('*', cors(corsOptions));
 mongoose.connect(mongoUrl, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
+    tls: true,  // Ensure TLS is used
+    tlsAllowInvalidCertificates: false,  // Do not allow invalid certificates
+    tlsAllowInvalidHostnames: false  // Do not allow invalid hostnames
 });
 
 // Middleware to parse JSON requests
@@ -80,41 +83,47 @@ const Property = mongoose.model('Property', propertySchema);
 // Register Route
 app.post('/register', async (req, res) => {
     const { firstName, lastName, email, phoneNumber, password, role } = req.body;
-
-    if (!firstName || !lastName || !email || !phoneNumber || !password || !role) {
-        return res.status(400).json({ error: 'All fields are required' });
-    }
-
+    
     try {
+        console.log('Registering user:', { firstName, lastName, email, phoneNumber, role });
         const hashedPassword = await bcrypt.hash(password, 10);
+        console.log('Hashed password:', hashedPassword);
         const user = new User({ firstName, lastName, email, phoneNumber, password: hashedPassword, role });
         await user.save();
+        console.log('User registered successfully:', user);
         res.status(201).json(user);
     } catch (error) {
+        console.error('Error during registration:', error.message);
         res.status(400).json({ error: error.message });
     }
+    res.on('finish', () => {
+        console.log('Response Headers:', res.getHeaders());
+    });
 });
 
 // Login Route
 app.post('/login', async (req, res) => {
     const { email, password } = req.body;
-
-    if (!email || !password) {
-        return res.status(400).json({ error: 'Email and password are required' });
-    }
-
     try {
+        console.log('Login attempt for:', email);
         const user = await User.findOne({ email });
         if (!user) {
+            console.log('User not found');
             return res.status(400).json({ error: 'Invalid credentials' });
         }
+        console.log('User found:', user);
+        console.log('Password to compare:', password);
         const isMatch = await bcrypt.compare(password, user.password);
+        console.log('Password match:', isMatch);
         if (!isMatch) {
+            console.log('Password does not match');
             return res.status(400).json({ error: 'Invalid credentials' });
         }
         const token = jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        console.log('User logged in successfully:', user);
         res.json({ token });
     } catch (error) {
+        console.error('Error during login:', error.message);
         res.status(500).json({ error: error.message });
     }
 });
@@ -167,12 +176,6 @@ app.get('*', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-
-const httpsOptions = {
-    key: fs.readFileSync(path.join(__dirname, 'server.key')),
-    cert: fs.readFileSync(path.join(__dirname, 'server.cert'))
-};
-
-https.createServer(httpsOptions, app).listen(PORT, () => {
+app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
